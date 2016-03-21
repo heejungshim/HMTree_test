@@ -1,0 +1,84 @@
+#+title: "Test data simulation in HMTree package"
+#+author: Heejung Shim 
+
+#+latex_header: \usepackage{parskip}
+#+latex_header: \setlength{\parindent}{0pt}
+#+latex_header: \usepackage{underscore}
+#+latex_header: \textwidth 16cm
+#+latex_header: \oddsidemargin 0.5cm
+#+latex_header: \evensidemargin 0.5cm
+#+OPTIONS: ^:nil
+
+* Test data simulation function in HMTree package
+#+begin_src R
+library("devtools")
+install_github("shimlab/HMTree")
+library("HMTree")
+packageVersion("HMTree")
+## [1] '0.1.0'
+
+
+curve_length = 1024
+model_mode = 'poisson' 
+##model_mode = 'gaussian' 
+num_groups=1
+num_individuals=10
+WHMT_sigma=0.5
+plotfn=FALSE
+ 
+set.seed(666) 
+res.pois = hmt_data(curve_length, model_mode, num_groups=1,num_individuals=10,WHMT_sigma=0.5,plotfn=FALSE)
+str(res.pois)
+##List of 4
+## $ lambda_vec     : num [1:1024] 58.3 57.7 57.1 56.5 55.9 ...
+## $ lambda_diff_vec: num [1:1024] 0 0 0 0 0 0 0 0 0 0 ...
+## $ data           : num [1:10, 1:1024] 63 66 63 62 50 52 55 71 57 55 ...
+## $ data_mean      : num [1:1024] 59.4 60.5 58.7 59.7 55.5 53.3 52.1 52.5 51.6 54.5 ...
+
+curve_length = 1024
+##model_mode = 'poisson' 
+model_mode = 'gaussian' 
+num_groups=1
+num_individuals=10
+WHMT_sigma=0.5
+plotfn=FALSE
+ 
+set.seed(666) 
+res.gaus = hmt_data(curve_length, model_mode, num_groups=1,num_individuals=10,WHMT_sigma=0.5,plotfn=FALSE)
+str(res.gaus)
+##List of 4
+## $ lambda_vec     : num [1:1024] 58.3 57.7 57.1 56.5 55.9 ...
+## $ lambda_diff_vec: num [1:1024] 0 0 0 0 0 0 0 0 0 0 ...
+## $ data           : num [1:1024] 58.6 58.7 56.9 57.5 54.8 ...
+## $ data_mean      : num [1:1024] 58.6 58.7 56.9 57.5 54.8 ...
+
+#######################################################
+## let's compare those outputs with files Or generated.
+#######################################################
+### You need to modify the following two lines.
+setwd('/home/hjshim/d/hjshim/projects/HMTprior/HMTree_test/')
+hmt.repodir.path = scan('.hmt.repodir.txt', what="")
+
+pois.true = as.numeric(t(read.table(paste0(hmt.repodir.path, "data/sim/test_hmt_poiss.true.txt"))))
+pois.mean = as.numeric(t(read.table(paste0(hmt.repodir.path, "data/sim/test_hmt_poiss.noisy.txt"))))
+pois.data = t(read.table(paste0(hmt.repodir.path, "data/sim/test_hmt_poiss.individual.noisy.txt")))
+
+gaus.true = as.numeric(t(read.table(paste0(hmt.repodir.path, "data/sim/test_hmt_gaussian.true.txt"))))
+gaus.mean = as.numeric(t(read.table(paste0(hmt.repodir.path, "data/sim/test_hmt_gaussian.noisy.txt"))))
+
+sum(abs(res.pois$lambda_vec - pois.true) < 0.001)
+sum(abs(res.pois$data_mean - pois.mean) < 0.001)
+sum(abs(res.pois$data - pois.data) < 0.001)
+## [1] 1024
+## [1] 1024
+## [1] 10240
+
+sum(abs(res.gaus$lambda_vec - gaus.true) < 0.001)
+sum(abs(res.gaus$data_mean - gaus.mean) < 0.001)
+sum(abs(res.gaus$data - gaus.mean) < 0.001)
+## [1] 1024
+## [1] 1024
+## [1] 1024
+#+end_src
+
+  
