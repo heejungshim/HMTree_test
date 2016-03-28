@@ -83,4 +83,109 @@ sum(abs(res.normal$data - normal.mean) < 0.001)
 ## [1] 1024
 #+end_src
 
+* Add sim.data function
+Here, I rename simulate_noisy_curve as sim.data and made multiple changes including an option which simulate multiple samples under normal model. Let's check if modification doe not change outputs. 
+#+begin_src R
+path.HMTree.package = "/home/hjshim/d/hjshim/software/HMTree/"
+## read all functions
+source(paste0(path.HMTree.package, "R/doppler.f.R"))
+source(paste0(path.HMTree.package, "R/heaviside.f.R"))
+source(paste0(path.HMTree.package, "R/spike.f.R"))
+source(paste0(path.HMTree.package, "R/simulate_true_curve.R"))
+##source(paste0(path.HMTree.package, "R/simulate_noisy_curve.R"))
+## read simulate.data function 
+source(paste0(path.HMTree.package, "R/simulate.data.R"))
+
+curve.length = 1024
+model.mode = 'Poisson' 
+num.groups=1
+num.samples=10
+
+set.seed(666)
+res.pois = simulate.data(curve.length=curve.length, model.mode=model.mode, num.groups=num.groups,num.samples=num.samples)
+str(res.pois)
+## List of 2
+## $ true.mean.curve: num [1:1024] 58.3 57.7 57.1 56.5 55.9 ...
+## $ data           : int [1:10, 1:1024] 63 66 63 62 50 52 55 71 57 55 ...
+
+curve.length = 1024
+model.mode = 'Normal' 
+num.groups=1
+num.samples=1
+normal.sigma=0.5
+ 
+set.seed(666) 
+res.normal = simulate.data(curve.length=curve.length, model.mode=model.mode, num.groups=num.groups,num.samples=num.samples, normal.sigma=normal.sigma)
+str(res.normal)
+## List of 2
+## $ true.mean.curve: num [1:1024] 58.3 57.7 57.1 56.5 55.9 ...
+## $ data           : num [1, 1:1024] 58.6 58.7 56.9 57.5 54.8 ...
+
+curve.length = 1024
+model.mode = 'Normal' 
+num.groups=1
+num.samples=10
+normal.sigma=0.5
+ 
+set.seed(666) 
+res.normal.10 = simulate.data(curve.length=curve.length, model.mode=model.mode, num.groups=num.groups,num.samples=num.samples, normal.sigma=normal.sigma)
+str(res.normal.10)
+## List of 2
+## $ true.mean.curve: num [1:1024] 58.3 57.7 57.1 56.5 55.9 ...
+## $ data           : num [1:10, 1:1024] 58.6 58.8 58.3 58.4 57.7 ...
+
+
+#######################################################
+## let's compare those outputs with files Or generated.
+#######################################################
+### You need to modify the following two lines.
+setwd('/home/hjshim/d/hjshim/projects/HMTprior/HMTree_test/')
+hmt.repodir.path = scan('.hmt.repodir.txt', what="")
+
+pois.true = as.numeric(t(read.table(paste0(hmt.repodir.path, "data/sim/test_hmt_poiss.true.txt"))))
+pois.mean = as.numeric(t(read.table(paste0(hmt.repodir.path, "data/sim/test_hmt_poiss.noisy.txt"))))
+pois.data = t(read.table(paste0(hmt.repodir.path, "data/sim/test_hmt_poiss.individual.noisy.txt")))
+
+normal.true = as.numeric(t(read.table(paste0(hmt.repodir.path, "data/sim/test_hmt_gaussian.true.txt"))))
+normal.mean = as.numeric(t(read.table(paste0(hmt.repodir.path, "data/sim/test_hmt_gaussian.noisy.txt"))))
+
+sum(abs(res.pois$true.mean.curve - pois.true) < 0.001)
+sum(abs(colMeans(res.pois$data) - pois.mean) < 0.001)
+sum(abs(res.pois$data - pois.data) < 0.001)
+## [1] 1024
+## [1] 1024
+## [1] 10240
+
+sum(abs(res.normal$true.mean.curve - normal.true) < 0.001)
+sum(abs(colMeans(res.normal$data) - normal.mean) < 0.001)
+sum(abs(res.normal$data - normal.mean) < 0.001)
+## [1] 1024
+## [1] 1024
+## [1] 1024
+
+
+#############################################
+## Check if function simulates proper data?
+#############################################
+
+curve.length = 1024
+model.mode = 'Poisson' 
+num.samples=30
+
+set.seed(666)
+res.pois = simulate.data(curve.length=curve.length, model.mode=model.mode, num.samples=num.samples)
+plot.simulate.data(res.pois)
+
+
+curve.length = 1024
+model.mode = 'Normal' 
+num.samples=30
+normal.sigma=0.5
+set.seed(666)
+res.normal = simulate.data(curve.length=curve.length, model.mode=model.mode, num.samples=num.samples, normal.sigma=normal.sigma)
+plot.simulate.data(res.normal)
+
+
+#+end_src
+
 
